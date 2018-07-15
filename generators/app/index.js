@@ -4,12 +4,8 @@ module.exports = class extends Generator {
   constructor(props, opts) {
     super(props, opts);
   }
-  // sample() {
-  //   this.log("sample");
-  // }
   // initializing() {
   //   // Your initialization methods (checking current project state, getting configs, etc)
-  //   this.log("initializing");
   // }
   prompting() {
     // Where you prompt users for options (where you’d call this.prompt())
@@ -42,13 +38,12 @@ module.exports = class extends Generator {
   }
   // configuring() {
   //   // Saving configurations and configure the project (creating .editorconfig files and other metadata files)
-  //   this.log("configuring");
   // }
   // default() {
   //   // If the method name doesn’t match a priority, it will be pushed to this group.
-  //   this.log("default");
   // }
   writing() {
+    console.log(this.config.getAll());
     // Where you write the generator specific files (routes, controllers, etc)
     const pkgJson = {
       devDependencies: {
@@ -58,21 +53,35 @@ module.exports = class extends Generator {
         react: "^16.2.0"
       }
     };
-
     // Extend or create package.json file in destination path
     this.fs.extendJSON(this.destinationPath("package.json"), pkgJson);
+    const copiedFiles = [
+      "README.md",
+      "webpack.config.common.js",
+      "webpack.config.dev.js",
+      "webpack.config.prod.js",
+      ".gitignore",
+      ".babelrc",
+      "src",
+      "public"
+    ];
+    copiedFiles.forEach(fileName => {
+      this.fs.copy(this.templatePath(fileName), this.destinationPath(fileName));
+    });
+    // this.fs.copyTpl(
+    //   this.templatePath("public"),
+    //   this.destinationPath("public")
+    // );
   }
   // conflicts() {
   //   // Where conflicts are handled (used internally)
-  //   this.log("conflicts");
   // }
   install() {
     // Where installations are run (npm, bower)
     // this.npmInstall();
-    this.yarnInstall();
+    // this.yarnInstall();
   }
   // end() {
   //   // Called last, cleanup, say good bye, etc
-  //   this.log("Goodbye");
   // }
 };
