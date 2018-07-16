@@ -1,5 +1,5 @@
 {
-  "name": "generator-sparrow-react",
+  "name": "generator-skeleton-react",
   "version": "0.1.0",
   "description": "",
   "files": [
@@ -9,6 +9,7 @@
     "yeoman-generator"
   ],
   "dependencies": {
+    "lodash": "^4.17.10",
     "yeoman-generator": "^3.0.0"
   }
 }

@@ -1,11 +1,11 @@
 const Generator = require("yeoman-generator");
 const fs = require("fs");
 const path = require("path");
+const _ = require("lodash");
 
 const dependencies = require("./dependencies/dependencies");
 const devDependencies = require("./dependencies/devDependencies");
 const apolloDependencies = require("./dependencies/apolloDependencies");
-const uiDependencies = require("./dependencies/uiDependencies");
 
 module.exports = class extends Generator {
   constructor(props, opts) {
@@ -39,6 +39,12 @@ module.exports = class extends Generator {
           }
           return true;
         }
+      },
+      {
+        type: "confirm",
+        message: "Install ApolloClient packages? (Default: No)",
+        name: "apollo",
+        default: false
       },
       {
         type: "list",
@@ -76,13 +82,24 @@ module.exports = class extends Generator {
       this.fs.copy(this.templatePath(fileName), this.destinationPath(fileName));
     });
 
-    this.fs.copyTpl(
-      this.templatePath("_package.json"),
-      this.destinationPath("package.json"),
-      {
-        name: this.userConfig.name
-      }
-    );
+    let finalDependencies = dependencies;
+    if (this.userConfig.apollo) {
+      finalDependencies = _.merge(finalDependencies, apolloDependencies);
+    }
+
+    const pkgJson = {
+      name: this.userConfig.name,
+      version: "0.0.1",
+      scripts: {
+        start: "npm run devServer",
+        devServer: "webpack-dev-server --config webpack.config.dev.js"
+      },
+      dependencies: finalDependencies,
+      devDependencies: devDependencies
+    };
+
+    // Extend or create package.json file in destination path
+    this.fs.extendJSON(this.destinationPath("package.json"), pkgJson);
   }
   // conflicts() {
   //   // Where conflicts are handled (used internally)
