@@ -1,4 +1,11 @@
 const Generator = require("yeoman-generator");
+const fs = require("fs");
+const path = require("path");
+
+const dependencies = require("./dependencies/dependencies");
+const devDependencies = require("./dependencies/devDependencies");
+const apolloDependencies = require("./dependencies/apolloDependencies");
+const uiDependencies = require("./dependencies/uiDependencies");
 
 module.exports = class extends Generator {
   constructor(props, opts) {
@@ -8,31 +15,40 @@ module.exports = class extends Generator {
   //   // Your initialization methods (checking current project state, getting configs, etc)
   // }
   prompting() {
-    // Where you prompt users for options (where you’d call this.prompt())
     return this.prompt([
       {
         type: "input",
         name: "name",
         message: "Your project name:",
-        store: true
+        // validate 函数可能在 windows 上失效？
+        validate: input => {
+          // 判断用户的输入是否为空
+          if (!input) {
+            this.log(" Sorry, project name is empty");
+            return false;
+          }
+
+          // 判断用户想要创建的文件夹是否已经存在
+          // 判断文件夹是否存在的方式有非常多种
+          // https://stackoverflow.com/questions/4482686/check-synchronously-if-file-directory-exists-in-node-js
+          // 但是作为自用的脚手架就简单判断了
+          const targetPath = path.join(this.destinationRoot(), input);
+          if (fs.existsSync && fs.existsSync(targetPath)) {
+            this.log(" Sorry, project directory is already exist");
+            return false;
+          }
+          return true;
+        }
       },
       {
         type: "list",
         name: "tool",
         message: "Choose dependencies install tool:",
         default: "yarn",
-        choices: ["yarn", "npm"],
-        store: true
-      },
-      {
-        type: "list",
-        name: "architecture",
-        message: "Choose project architecture:",
-        default: "redux",
-        choices: ["redux", "mobx"],
-        store: true
+        choices: ["yarn", "npm"]
       }
     ]).then(answers => {
+      this.userConfig = answers;
       this.destinationRoot(answers.name);
     });
   }
@@ -43,18 +59,6 @@ module.exports = class extends Generator {
   //   // If the method name doesn’t match a priority, it will be pushed to this group.
   // }
   writing() {
-    console.log(this.config.getAll());
-    // Where you write the generator specific files (routes, controllers, etc)
-    const pkgJson = {
-      devDependencies: {
-        eslint: "^3.15.0"
-      },
-      dependencies: {
-        react: "^16.2.0"
-      }
-    };
-    // Extend or create package.json file in destination path
-    this.fs.extendJSON(this.destinationPath("package.json"), pkgJson);
     const copiedFiles = [
       "README.md",
       "webpack.config.common.js",
@@ -63,25 +67,36 @@ module.exports = class extends Generator {
       ".gitignore",
       ".babelrc",
       "src",
+      // 注意，这里无法复制 public 里的 dist 文件夹
+      // 因为 dist 文件夹是空的，即使添加了 .keep 文件也不行
+      // 所以只能添加一个 keep 文件
       "public"
     ];
     copiedFiles.forEach(fileName => {
       this.fs.copy(this.templatePath(fileName), this.destinationPath(fileName));
     });
-    // this.fs.copyTpl(
-    //   this.templatePath("public"),
-    //   this.destinationPath("public")
-    // );
+
+    this.fs.copyTpl(
+      this.templatePath("_package.json"),
+      this.destinationPath("package.json"),
+      {
+        name: this.userConfig.name
+      }
+    );
   }
   // conflicts() {
   //   // Where conflicts are handled (used internally)
   // }
   install() {
-    // Where installations are run (npm, bower)
-    // this.npmInstall();
-    // this.yarnInstall();
+    const { tool } = this.userConfig;
+    if (tool === "npm") {
+      this.npmInstall();
+    } else if (tool === "yarn") {
+      this.yarnInstall();
+    }
   }
   // end() {
   //   // Called last, cleanup, say good bye, etc
+  //   console.log("Goodbye");
   // }
 };

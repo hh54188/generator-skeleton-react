@@ -20,7 +20,12 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(["public/**/*.js", "public/**/*.map"]),
     new HappyPack({
-      loaders: ["babel-loader"]
+      loaders: [
+        {
+          loader: "babel-loader",
+          cacheDirectory: true
+        }
+      ]
     })
   ],
   module: {

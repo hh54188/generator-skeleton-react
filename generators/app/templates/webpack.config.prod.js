@@ -6,7 +6,7 @@ const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
 
 module.exports = merge(common, {
   output: {
-    filename: "[name].bundle.js",
+    filename: "[name].[hash].bundle.js",
     path: path.join(__dirname, "public/dist")
   },
   devtool: "source-map",

@@ -8,6 +8,9 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const PUBLIC_DIR_PATH = path.join(__dirname, "public");
 
 module.exports = merge(common, {
+  // 除非真的有需要
+  // 否则不要启用任何 source-map
+  // 会导致编译变慢
   // devtool: "inline-source-map",
   devServer: {
     contentBase: PUBLIC_DIR_PATH,
