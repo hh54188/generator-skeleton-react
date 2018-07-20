@@ -44,7 +44,16 @@ module.exports = {
         // 因为需要引入 /node_modules/antd 中的 .less 变量，
         // 所以不能排除 /node_modules/ 文件夹
         // exclude: /node_modules/,
-        loaders: ["style-loader", "css-loader", "less-loader"]
+        loaders: [
+          "style-loader",
+          "css-loader",
+          {
+            loader: "less-loader",
+            options: {
+              javascriptEnabled: true
+            }
+          }
+        ]
       },
       {
         test: /\.(png|woff|woff2|eot|ttf|svg)$/,
